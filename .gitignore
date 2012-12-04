@@ -1,0 +1,3 @@
+#Ignore mac files
+.DS_Store
+src/.DS_Store
