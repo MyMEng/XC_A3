@@ -97,7 +97,7 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration buildProperties="" description="" id="com.xmos.cdt.toolchain.1743169386" name="Debug" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="XC_A3" buildProperties="" description="" id="com.xmos.cdt.toolchain.1743169386" name="Debug" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="com.xmos.cdt.toolchain.1743169386.1198296719" name="/" resourcePath="">
 						<toolChain id="com.xmos.cdt.toolchain.1181588304" name="com.xmos.cdt.toolchain" superClass="com.xmos.cdt.toolchain">
 							<targetPlatform archList="all" binaryParser="com.xmos.cdt.core.XEBinaryParser" id="com.xmos.cdt.core.platform.1924635862" isAbstract="false" osList="linux,win32,macosx" superClass="com.xmos.cdt.core.platform"/>
@@ -217,18 +217,32 @@
 									<listOptionValue builtIn="false" value="__EXCEPTIONS=1"/>
 									<listOptionValue builtIn="false" value="__WCHAR_UNSIGNED__=1"/>
 								</option>
-								<option id="com.xmos.c.compiler.option.include.paths.2130158758" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
+								<option id="com.xmos.c.compiler.option.include.paths.2130158758" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath"/>
+								<option id="com.xmos.xc.compiler.option.include.paths.2077258496" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1/xcore-xmos-elf&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/}&quot;"/>
 								</option>
-								<inputType id="com.xmos.cdt.xc.compiler.input.2128115589" name="XC Sources" superClass="com.xmos.cdt.xc.compiler.input"/>
+								<inputType id="com.xmos.cdt.xc.compiler.input.2128115589" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
+							</tool>
+							<tool id="com.xmos.cdt.c.compiler.1622959985" name="com.xmos.cdt.c.compiler" superClass="com.xmos.cdt.c.compiler">
+								<option id="com.xmos.c.compiler.option.include.paths.476737387" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/}&quot;"/>
+								</option>
+								<inputType id="com.xmos.cdt.c.compiler.input.c.545192064" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
+							</tool>
+							<tool id="com.xmos.cdt.cxx.compiler.700736231" name="com.xmos.cdt.cxx.compiler" superClass="com.xmos.cdt.cxx.compiler">
+								<option id="com.xmos.cxx.compiler.option.include.paths.103952006" name="com.xmos.cxx.compiler.option.include.paths" superClass="com.xmos.cxx.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/}&quot;"/>
+								</option>
+								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.2016246270" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding=".build_Release|.build_Debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ReadyMade|.build_Release|.build_Debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -446,18 +460,32 @@
 									<listOptionValue builtIn="false" value="__EXCEPTIONS=1"/>
 									<listOptionValue builtIn="false" value="__WCHAR_UNSIGNED__=1"/>
 								</option>
-								<option id="com.xmos.c.compiler.option.include.paths.448852540" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
+								<option id="com.xmos.c.compiler.option.include.paths.448852540" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath"/>
+								<option id="com.xmos.xc.compiler.option.include.paths.1739271608" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1/xcore-xmos-elf&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/}&quot;"/>
 								</option>
-								<inputType id="com.xmos.cdt.xc.compiler.input.1045628905" name="XC Sources" superClass="com.xmos.cdt.xc.compiler.input"/>
+								<inputType id="com.xmos.cdt.xc.compiler.input.1045628905" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
+							</tool>
+							<tool id="com.xmos.cdt.c.compiler.794949229" name="com.xmos.cdt.c.compiler" superClass="com.xmos.cdt.c.compiler">
+								<option id="com.xmos.c.compiler.option.include.paths.317262361" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/}&quot;"/>
+								</option>
+								<inputType id="com.xmos.cdt.c.compiler.input.c.222265566" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
+							</tool>
+							<tool id="com.xmos.cdt.cxx.compiler.416860897" name="com.xmos.cdt.cxx.compiler" superClass="com.xmos.cdt.cxx.compiler">
+								<option id="com.xmos.cxx.compiler.option.include.paths.1633420551" name="com.xmos.cxx.compiler.option.include.paths" superClass="com.xmos.cxx.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/}&quot;"/>
+								</option>
+								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.1753286908" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding=".build_Release|.build_Debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ReadyMade|.build_Release|.build_Debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
