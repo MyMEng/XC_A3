@@ -81,114 +81,144 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO]) {
 	uchar buf[3][IMWD];
 
 	// Lines read
-	int lines, sentLine, line;
+	int sentLine, line, totalLines;
 
 	// Remeber current pixel processed
 	int pix;
-
+	bool lines, running;
 	// No lines are read initially
-	lines = 0;
-
+	lines = false;
 	pix = 0;
+	running = true;
+	totalLines = 0;
 
-	// Read image to an array and save
-	for( int y = 0; y < 3; y++ ) {
-		for( int x = 0; x < IMWD; x++ ) {
-			c_in :> buf[lines][x];
-		}
-		lines++;
-	}
-
-	printf("Reading finished reading first chunk\n");
-
-	sentLine = 0;
-	pix = 0;
-	for( int w = 0; w < WORKERNO; w++)  {
-
-		// Top line
-		line = sentLine - 1;
-
-		// Send left top
-		if(line < 0 || (pix % IMWD) - 1 < 0) {
-			val = BLACK;
+	while(running) {
+		// Read image to an array and save
+		if(lines == false) {
+			for( int y = 0; y < 3; y++ ) {
+				for( int x = 0; x < IMWD; x++ ) {
+					if(lines == false && y == 0) {
+						buf[y][x] = BLACK;
+					}
+					else {
+						c_in :> buf[y][x];
+					}
+				}
+			}
+			totalLines += 2;
+			lines = true;
 		} else {
-			val = buf[line][(pix % IMWD) - 1];
-		}
-		distToWorker[w] <: val;
-
-
-		// Send top
-		if(line < 0 || (pix % IMWD) < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)];
-		}
-		distToWorker[w] <: val;
-
-		// Send top right
-		if(line < 0 || (pix % IMWD) + 1 < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)+1];
-		}
-		distToWorker[w] <: val;
-
-		// Send current line
-		line = sentLine;
-		// Send middle left
-		if(line < 0 || (pix % IMWD) - 1 < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)-1];
-		}
-		distToWorker[w] <: val;
-
-		// Send middle
-		if(line < 0 || (pix % IMWD) < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)];
-		}
-		distToWorker[w] <: val;
-
-
-		// Send middle right
-		if(line < 0 || (pix % IMWD)+1 < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)+1];
+			for( int x = 0; x < IMWD; x++ ) {
+					c_in :> buf[2][x];
+			}
+			totalLines++;
 		}
 
-		distToWorker[w] <: val;
 
-		// Send left top
-		line = sentLine + 1;
+		printf("Reading finished reading first chunk\n");
 
-		// Send bottom left
-		if(line < 0 || (pix % IMWD)-1 < 0) {
-			val = BLACK;
-		} else {
- 			val = buf[line][(pix % IMWD)-1];
+
+		// Now send second lines to workers
+
+		sentLine = 1;
+		for( pix = 0; pix < IMWD; pix++)  {
+
+			int w; // Worker number
+			w = pix % WORKERNO;
+			// Top line
+			line = sentLine - 1;
+
+			// Send left top
+			if(line < 0 || (pix % IMWD) - 1 < 0) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD) - 1];
+			}
+			distToWorker[w] <: val;
+
+
+			// Send top
+			if(line < 0 || (pix % IMWD) < 0) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)];
+			}
+			distToWorker[w] <: val;
+
+			// Send top right
+			if(line < 0 || (pix % IMWD) + 1 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)+1];
+			}
+			distToWorker[w] <: val;
+
+			// Send current line
+			line = sentLine;
+			// Send middle left
+			if(line < 0 || (pix % IMWD) - 1 < 0) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)-1];
+			}
+			distToWorker[w] <: val;
+
+			// Send middle
+			if(line < 0 || (pix % IMWD) < 0) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)];
+			}
+			distToWorker[w] <: val;
+
+
+			// Send middle right
+			if(line < 0 || (pix % IMWD)+1 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)+1];
+			}
+
+			distToWorker[w] <: val;
+
+			// Send left top
+			line = sentLine + 1;
+
+			// Send bottom left
+			if(line < 0 || (pix % IMWD)-1 < 0) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)-1];
+			}
+			distToWorker[w] <: val;
+
+			// Send bottom
+			if(line < 0 || (pix % IMWD) < 0) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)];
+			}
+			distToWorker[w] <: val;
+
+			// Send bottom right
+			if(line < 0 || (pix % IMWD)+1 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[line][(pix % IMWD)+1];
+			}
+			distToWorker[w] <: val;
 		}
-		distToWorker[w] <: val;
 
-		// Send bottom
-		if(line < 0 || (pix % IMWD) < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)];
+		// Copy rows
+		for(int i = 0; i < IMWD; i++) {
+			buf[0][i] = buf[1][i];
+			buf[1][i] = buf[2][i];
 		}
-		distToWorker[w] <: val;
 
-		// Send bottom right
-		if(line < 0 || (pix % IMWD)+1 < 0) {
-			val = BLACK;
-		} else {
-			val = buf[line][(pix % IMWD)+1];
+
+		if(totalLines == IMHT) {
+			running = false;
 		}
-		distToWorker[w] <: val;
-
-		pix++;
 	}
 
 	printf( "ProcessImage:Done...\n" );
@@ -212,8 +242,11 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	// Set running to true
 	running = true;
 
+
 	// Be ready to process threads
 	while(running) {
+
+		average = 0;
 
 		// Get pixels to blur from the distributor
 		for(int i = 0; i < PIXELS; i++) {
@@ -239,6 +272,7 @@ void worker(chanend distToWorker, chanend workerToColl) {
 void collector(chanend workerToColl[WORKERNO], chanend c_out) {
 	bool running;
 	uchar pixel;
+	int noPixels;
 	int lines = 0;
 	running = true;
 
@@ -246,8 +280,11 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out) {
 		for(int  w = 0; w < WORKERNO; w++  ) {
 			workerToColl[w] :> pixel;
 			c_out <: pixel;
+			noPixels++;
 		}
-		lines++;
+		if(noPixels == IMHT*IMWD) {
+			running = false;
+		}
 	}
 }
 
