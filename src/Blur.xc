@@ -52,16 +52,28 @@ void DataInStream(char infname[], chanend c_out) {
 //////////////////////////////////////////////////////////////////////////////
 void distributor(chanend c_in, chanend c_out) {
 	uchar val;
+	uchar image[ IMHT][IMWD];
 	printf( "ProcessImage:Start, size = %dx%d\n", IMHT, IMWD );
 
 	//This code is to be replaced – it is a place holder for farming out the work...
 
+	// Read image to array and save
 	for( int y = 0; y < IMHT; y++ ) {
 		for( int x = 0; x < IMWD; x++ ) {
-			c_in :> val;
-			c_out <: (uchar)( val ^ 0xFF ); //Need to cast
+			c_in :> image[y][x];
+			//image[y][x] = val;
+
 		}
 	}
+
+	printf("Reading finished\n");
+
+	for( int y = 0; y < IMHT; y++)  {
+		for( int x = 0; x < IMWD; x++ ) {
+			c_out <: image[y][x];
+		}
+	}
+
 	printf( "ProcessImage:Done...\n" );
 }
 
