@@ -12,6 +12,13 @@ typedef unsigned char uchar;
 #include "pgmIO.h"
 #define IMHT 16
 #define IMWD 16
+#define WORKERNO 4
+
+// input image path
+char infname[] = "D:\\test.pgm";
+
+// output image path
+char outfname[] = "D:\\testout.pgm";
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -44,25 +51,23 @@ void DataInStream(char infname[], chanend c_out) {
 	printf( "DataInStream:Done...\n" );
 	return;
 }
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Start your implementation by changing this function to farm out
 // parts of the image...
 //
 //////////////////////////////////////////////////////////////////////////////
-void distributor(chanend c_in, chanend c_out) {
+void distributor(chanend c_in, chanend distToWorker[WORKERNO]) {
 	uchar val;
-	uchar image[ IMHT][IMWD];
-	printf( "ProcessImage:Start, size = %dx%d\n", IMHT, IMWD );
+	uchar buf[IMHT][IMWD];
 
 	//This code is to be replaced – it is a place holder for farming out the work...
 
 	// Read image to array and save
 	for( int y = 0; y < IMHT; y++ ) {
 		for( int x = 0; x < IMWD; x++ ) {
-			c_in :> image[y][x];
-			//image[y][x] = val;
-
+			c_in :> val;
 		}
 	}
 
@@ -70,11 +75,29 @@ void distributor(chanend c_in, chanend c_out) {
 
 	for( int y = 0; y < IMHT; y++)  {
 		for( int x = 0; x < IMWD; x++ ) {
-			c_out <: image[y][x];
+			distToWorker[0] <: val;
 		}
 	}
 
 	printf( "ProcessImage:Done...\n" );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// Process a chunk of pixels
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+void worker(chanend distToWorker, chanend workerToColl) {
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// Collect results from workers and send to data stream
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+void collector(chanend workerToColl[WORKERNO], chanend c_out) {
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -108,22 +131,36 @@ void DataOutStream(char outfname[], chanend c_in) {
 
 //MAIN PROCESS defining channels, orchestrating and starting the threads
 int main() {
-	//put your input image path here
-	char infname[] = "D:\\test.pgm";
 
-	//put your output image path here
-	char outfname[] = "D:\\testout.pgm";
 
 	//extend your channel definitions here
 	chan c_inIO, c_outIO;
 
+	// Channels between distributor and workers
+	chan distToWorker[WORKERNO];
+
+	// Channels between workers and collectors
+	chan workerToColl[WORKERNO];
+
 	//extend/change this par statement to implement your concurrent filter
 	par {
-		DataInStream( infname, c_inIO );
-		distributor( c_inIO, c_outIO );
-		DataOutStream( outfname, c_outIO );
+		on stdcore[0] : DataInStream( infname, c_inIO );
+
+		// Start distributor thread and connect it with workers
+		on stdcore[0] :distributor( c_inIO, distToWorker );
+
+		// Spin-off worker threads
+		// Make sure they run on separate cores
+		par(int i = 0; i < WORKERNO; i++) {
+			on stdcore[i%4] : worker(distToWorker[i], workerToColl[i]);
+		}
+
+		// Start collector worker
+		on stdcore[3] : collector(workerToColl, c_outIO);
+
+		on stdcore[3] : DataOutStream( outfname, c_outIO );
 	}
 
-	printf( "Main:Done...\n" );
+
 	return 0;
 }
