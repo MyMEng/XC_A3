@@ -1,3 +1,6 @@
 #Ignore mac files
 .DS_Store
 src/.DS_Store
+.build_Debug/
+.build_Release/
+bin/
