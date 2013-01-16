@@ -25,6 +25,6 @@ typedef unsigned int bool;
 #define PIXELS 9
 
 // Define black color
-#define BLACK 0xFF;
+#define BLACK 0x0;
 
 #endif /* COMMON_H_ */

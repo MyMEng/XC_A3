@@ -20,7 +20,7 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	uchar temp;
 
 	// Remeber average of nine pixels
-	uchar average;
+	int average;
 
 	// Set running to true
 	running = true;
@@ -34,14 +34,14 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		// Get pixels to blur from the distributor
 		for(int i = 0; i < PIXELS; i++) {
 			distToWorker :> temp;
-			average += temp;
+			average += (int)temp;
 		}
 
 		// Take the average
 		average /= PIXELS;
 
 		// Send result to a collector
-		workerToColl <: average;
+		workerToColl <: (uchar)average;
 	}
 
 
