@@ -118,16 +118,16 @@ int main() {
 		// Start distributor thread and connect it with workers
 		on stdcore[0] : distributor( c_inIO, distToWorker );
 
-		on stdcore[0] : visualiser(collToVisualizer, quadrant0, quadrant1, quadrant2, quadrant3 );
-		on stdcore[0]: showLED(cled0,quadrant0);
-		on stdcore[1]: showLED(cled1,quadrant1);
-		on stdcore[2]: showLED(cled2,quadrant2);
-		on stdcore[3]: showLED(cled3,quadrant3);
+		on stdcore[0] : visualiser( collToVisualizer, quadrant0, quadrant1, quadrant2, quadrant3 );
+		on stdcore[0]: showLED( cled0, quadrant0 );
+		on stdcore[1]: showLED( cled1, quadrant1 );
+		on stdcore[2]: showLED( cled2, quadrant2 );
+		on stdcore[3]: showLED( cled3, quadrant3 );
 
 		// Spin-off worker threads
 		// Make sure they run on separate cores
-		par(int i = 0; i < WORKERNO; i++) {
-			on stdcore[i%4] : worker(distToWorker[i], workerToColl[i]);
+		par( int i = 0; i < WORKERNO; i++ ) {
+			on stdcore[i%4] : worker( distToWorker[i], workerToColl[i] );
 		}
 
 		// Start collector worker

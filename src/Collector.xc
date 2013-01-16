@@ -19,20 +19,20 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualiz
 	bool running;	// Is collector runnning?
 	uchar pixel;	// Buffer
 	int noPixels;	// Number of pixels read
-	int lines;		// Number of lines
+	const int maxPixels = (IMHT*IMWD); // Maxium number of pixels to be processed
 
 	// Initialize variables
 	running = true;
 	noPixels = 0;
-	lines = 0;
 
 	while(running) {
 		for(int  w = 0; w < WORKERNO; w++  ) {
 			workerToColl[w] :> pixel;
 			c_out <: pixel;
 			noPixels++;
+			toVisualizer <: (int)(noPixels * 100 / maxPixels);
 		}
-		if(noPixels == (IMHT*IMWD)) {
+		if(noPixels == maxPixels) {
 			running = false;
 		}
 	}
