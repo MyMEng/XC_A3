@@ -32,7 +32,7 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out) {
 			c_out <: pixel;
 			noPixels++;
 		}
-		if(noPixels == IMHT*IMWD) {
+		if(noPixels == (IMHT*IMWD)) {
 			running = false;
 		}
 	}

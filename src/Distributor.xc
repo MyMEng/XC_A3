@@ -48,14 +48,20 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO]) {
 			// You read two lines
 			totalLines += 2;
 			lines = true;
-		} else {
+		} else  {
 
 			for(int i = 0; i < IMWD; i++) {
 				// Move image lines up in the buffer
 				buf[0][i] = buf[1][i];
 				buf[1][i] = buf[2][i];
-				// Read new line
-				c_in :> buf[2][i];
+
+				if(totalLines == IMHT) {
+					// Fill black if finished
+					buf[2][i] = BLACK;
+				} else {
+					// Read new line
+					c_in :> buf[2][i];
+				}
 			}
 			totalLines++;
 		}
@@ -130,7 +136,8 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO]) {
 			distToWorker[ w ] <: val;
 		}
 
-		if( totalLines == IMHT ) {
+		// If you read all lines and processed last one, finish
+		if( totalLines == IMHT + 1 ) {
 			running = false;
 		}
 	}
