@@ -22,11 +22,13 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	// Remeber average of nine pixels
 	int result;
 
+	bool buttonDpressed;
+
 	// Set running to true
 	running = true;
 
 	//Status of button D
-	bool buttonDpressed = false;
+	buttonDpressed = true;
 
 	// Be ready to process threads
 	while(running) {
@@ -52,15 +54,16 @@ void worker(chanend distToWorker, chanend workerToColl) {
 			}
 
 			for(int i = 0; i < 9; i ++) {
+				int temp;
 				int min = i;
 				for(int y = i; y < 9; y ++) {
 					if(val[min] > val[y]) {
 						min = y;
 					}
 				}
-				int temp = val[i];
+				temp = val[i];
 				val[i] = val[min];
-				array[min] = temp;
+				val[min] = temp;
 			}
 			result = val[4];
 		}
