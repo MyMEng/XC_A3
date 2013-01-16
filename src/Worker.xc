@@ -20,33 +20,64 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	uchar temp;
 
 	// Remeber average of nine pixels
-	int average;
+	int result;
 
 	// Set running to true
 	running = true;
 
+	//Status of button D
+	bool buttonDpressed = false;
 
 	// Be ready to process threads
 	while(running) {
 
-		average = 0;
+		result = 0;
 
-		// Get pixels to blur from the distributor
-		for(int i = 0; i < PIXELS; i++) {
-			distToWorker :> temp;
-			average += (int)temp;
+		if(buttonDpressed == false) {
+			// Get pixels to blur from the distributor
+			for(int i = 0; i < PIXELS; i++) {
+				distToWorker :> temp;
+				result += (int)temp;
+			}
+
+			// Take the average
+			result /= PIXELS;
+		} else {
+			int val[9];
+
+			// Put pixels to array
+			for(int i = 0; i < PIXELS; i++) {
+				distToWorker :> temp;
+				val[i] = (int)temp;
+			}
+
+			for(int i = 0; i < 9; i ++) {
+				int min = i;
+				for(int y = i; y < 9; y ++) {
+					if(val[min] > val[y]) {
+						min = y;
+					}
+				}
+				int temp = val[i];
+				val[i] = val[min];
+				array[min] = temp;
+			}
+			result = val[4];
 		}
 
-		// Take the average
-		average /= PIXELS;
+		/*
+		result += 50;
 
-		average += 50;
+		if(result > 255) {
+			result = 255;
+		} else if(result < 0) {
+			result = 0;
+		}
+		*/
 
-		if(average > 255)
-			average = 255;
 
 		// Send result to a collector
-		workerToColl <: (uchar)average;
+		workerToColl <: (uchar)result;
 	}
 
 
