@@ -40,6 +40,11 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		// Take the average
 		average /= PIXELS;
 
+		average += 50;
+
+		if(average > 255)
+			average = 255;
+
 		// Send result to a collector
 		workerToColl <: (uchar)average;
 	}

@@ -17,12 +17,19 @@
 #include "Distributor.h"
 #include "Worker.h"
 #include "Collector.h"
+#include "Visualizer.h"
 
 // input image path
 char infname[] = "D:\\test.pgm";
 
 // output image path
 char outfname[] = "D:\\testout.pgm";
+
+// define ports for led visualization
+out port cled0 = PORT_CLOCKLED_0;
+out port cled1 = PORT_CLOCKLED_1;
+out port cled2 = PORT_CLOCKLED_2;
+out port cled3 = PORT_CLOCKLED_3;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -98,12 +105,24 @@ int main() {
 	// Channels between workers and collectors
 	chan workerToColl[WORKERNO];
 
+	// Channel between collector and visualizer
+	chan collToVisualizer;
+
+	// Helper channels for LED visualisation
+	chan quadrant0, quadrant1, quadrant2, quadrant3;
+
 	//extend/change this par statement to implement your concurrent filter
 	par {
 		on stdcore[0] : DataInStream( infname, c_inIO );
 
 		// Start distributor thread and connect it with workers
 		on stdcore[0] : distributor( c_inIO, distToWorker );
+
+		on stdcore[0] : visualiser(collToVisualizer, quadrant0, quadrant1, quadrant2, quadrant3 );
+		on stdcore[0]: showLED(cled0,quadrant0);
+		on stdcore[1]: showLED(cled1,quadrant1);
+		on stdcore[2]: showLED(cled2,quadrant2);
+		on stdcore[3]: showLED(cled3,quadrant3);
 
 		// Spin-off worker threads
 		// Make sure they run on separate cores
@@ -112,7 +131,7 @@ int main() {
 		}
 
 		// Start collector worker
-		on stdcore[3] : collector(workerToColl, c_outIO);
+		on stdcore[3] : collector(workerToColl, c_outIO, collToVisualizer);
 
 		on stdcore[3] : DataOutStream( outfname, c_outIO );
 	}

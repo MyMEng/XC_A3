@@ -14,7 +14,7 @@
 // Collect results from workers and send to data stream
 //
 /////////////////////////////////////////////////////////////////////////////////////////
-void collector(chanend workerToColl[WORKERNO], chanend c_out) {
+void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualizer) {
 	// Declare variables
 	bool running;	// Is collector runnning?
 	uchar pixel;	// Buffer

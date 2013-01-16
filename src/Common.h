@@ -15,6 +15,7 @@ typedef unsigned int bool;
 #define true 1
 #define false 0
 
+// Image height and width
 #define IMHT 16
 #define IMWD 16
 
@@ -26,5 +27,16 @@ typedef unsigned int bool;
 
 // Define black color
 #define BLACK 0x0;
+
+// Default delay used by wait moment
+#define DEFAULTDELAY 8000000
+
+// WAIT function
+// Allow to specify delay
+void waitMomentCustom(int delay);
+
+// Use default delay
+void waitMoment();
+
 
 #endif /* COMMON_H_ */
