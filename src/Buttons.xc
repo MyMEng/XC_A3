@@ -4,11 +4,6 @@
 #include "Common.h"
 #include "Buttons.h"
 
-// Port for buttons' leds
-out port buttonLed = PORT_BUTTONLED;
-in port buttons = PORT_BUTTON;
-out port speaker = PORT_SPEAKER;
-
 
 // Define delays
 #define LEDDELAY 100000
@@ -23,20 +18,38 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 	// Is button listener running?
 	bool running = true;
 
-	while (running) {
+	status_t status = PAUSE;
+
+	while ( running ) {
+		// Used to check status changes
+		status_t old_status;
 
 		// check if some buttons are pressed
 		b when pinsneq(15) :> r;
 
-		switch(r){
-			case buttonB:
-			case buttonC:
-			case buttonA:
-			case buttonD:
-				break;
-			default:
-				break;
+		old_status = status;
+		switch( r ) {
+
+		// Start the process
+		case buttonA:
+			status = RUNNING;
+			break;
+		case buttonB:
+			status = PAUSE;
+			break;
+		case buttonC:
+			status = TERMINATE;
+			running = false;
+			break;
+		case buttonD:
+			break;
+		default:
+			break;
 		}
+
+		// Send new status if changed
+		if( old_status != status)
+			toDistributor <: status;
 
 		//buttonLed <: (2 * muteSound) + (4 * pause); ;
 

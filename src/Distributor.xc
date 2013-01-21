@@ -10,7 +10,7 @@
 // parts of the image...
 //
 //////////////////////////////////////////////////////////////////////////////
-void distributor(chanend c_in, chanend distToWorker[WORKERNO]) {
+void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButtons) {
 
 	// Temporary variable to store currently read value
 	uchar val;
@@ -18,19 +18,39 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO]) {
 	// Buffer to store lines read
 	uchar buf[3][IMWD];
 
+	// Status of the program
+	status_t status;
+
 	// Lines read
 	int sentLine, line, totalLines;
 
 	// Remeber current pixel processed
 	int pix;
 	bool lines, running;
+
 	// No lines are read initially
 	lines = false;
 	pix = 0;
 	running = true;
 	totalLines = 0;
 
+	// Set status to 'paused'
+	status = PAUSE;
+
 	while(running) {
+
+		if( status == PAUSE ) {
+			select {
+				case fromButtons :> status:
+					break;
+				default:
+					break;
+			}
+
+			if(status == PAUSE)
+				continue;
+		}
+
 		// Read image to an array and save
 		if(lines == false) {
 			// Fill first row with black

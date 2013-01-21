@@ -18,12 +18,15 @@
 #include "Worker.h"
 #include "Collector.h"
 #include "Visualizer.h"
+#include "Buttons.h"
 
 // input image path
-char infname[] = "D:\\test.pgm";
+//char infname[] = "D:\\test.pgm";
+char infname[] = "/Users/kacper/XMOS/XC_A3/testS.pgm";
 
 // output image path
-char outfname[] = "D:\\testout.pgm";
+//char outfname[] = "D:\\testout.pgm";
+char outfname[] = "/Users/kacper/XMOS/XC_A3/testOUT.pgm";
 
 // define ports for led visualization
 out port cled0 = PORT_CLOCKLED_0;
@@ -31,6 +34,8 @@ out port cled1 = PORT_CLOCKLED_1;
 out port cled2 = PORT_CLOCKLED_2;
 out port cled3 = PORT_CLOCKLED_3;
 
+in port buttons = PORT_BUTTON;
+out port speaker = PORT_SPEAKER;
 /////////////////////////////////////////////////////////////////////////////
 //
 // Read Image from pgm file with path and name infname[] to channel c_out
@@ -105,6 +110,9 @@ int main() {
 	// Channels between workers and collectors
 	chan workerToColl[WORKERNO];
 
+	// Channel from buttons to distributor
+	chan buttonsToDistributor;
+
 	// Channel between collector and visualizer
 	chan collToVisualizer;
 
@@ -115,8 +123,10 @@ int main() {
 	par {
 		on stdcore[0] : DataInStream( infname, c_inIO );
 
+		on stdcore[0] : buttonListener(buttons, speaker, buttonsToDistributor);
+
 		// Start distributor thread and connect it with workers
-		on stdcore[0] : distributor( c_inIO, distToWorker );
+		on stdcore[0] : distributor( c_inIO, distToWorker, buttonsToDistributor );
 
 		on stdcore[0] : visualiser( collToVisualizer, quadrant0, quadrant1, quadrant2, quadrant3 );
 		on stdcore[0]: showLED( cled0, quadrant0 );

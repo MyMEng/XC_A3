@@ -20,7 +20,14 @@ typedef unsigned int bool;
 #define IMWD 100
 
 // Maximum number of workers
-#define WORKERNO 4
+#define WORKERNO 10
+
+// Status of application must be greater than 257 not to confuse it with a value of a pixel
+typedef enum {
+	PAUSE = 257,
+	RUNNING = 258,
+	TERMINATE = 259
+} status_t;
 
 // Number of pixels to send/process
 #define PIXELS 9
