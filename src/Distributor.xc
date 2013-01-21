@@ -47,10 +47,12 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 				break;
 		}
 
-		if(status == PAUSE)
-			continue;
+
+
 
 		if(status == CHANGE_ALGORITHM && !started) {
+
+			printf("chnge algoruithm\n");
 
 			// Notify about changed algorithms
 			for(int i = 0; i < WORKERNO; i++)
@@ -59,7 +61,15 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			// Switch back to pause
 			status = PAUSE;
 			continue;
+		} else if( status == RUNNING && !started ) {
+			// Notify about changed algorithms
+			for(int i = 0; i < WORKERNO; i++)
+				distToWorker[i] <: RUNNING;
+			started = true;
 		}
+
+		if(status == PAUSE)
+			continue;
 
 		// Read image to an array and save
 		if(lines == false) {

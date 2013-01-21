@@ -9,6 +9,9 @@
 #define LEDDELAY 100000
 #define DEFAULTDELAY 8000000
 
+//Buttons LED port
+out port buttonLed = PORT_BUTTONLED;
+
 //READ BUTTONS and send to userAnt
 void buttonListener(in port b, out port spkr, chanend toDistributor) {
 
@@ -16,7 +19,7 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 	unsigned int r;
 
 	// Started?
-	bool started;
+	bool started, paused, filter;
 
 	// Status of buttons
 	status_t status;
@@ -24,6 +27,8 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 	// Is button listener running?
 	bool running;
 
+	filter = false;
+	paused = false;
 	running = true;
 	started = false;
 
@@ -50,10 +55,12 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 		case buttonB:
 			if( status == RUNNING ) {
 				status = PAUSE;
+				paused = !paused;
 				//printf("Pause...\n");
 			} else if( status == PAUSE && started ) {
 				//printf("Resume...\n");
 				status = RUNNING;
+				paused = !paused;
 			}
 			break;
 		case buttonC:
@@ -64,23 +71,25 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 		case buttonD:
 			if(!started) {
 				toDistributor <: CHANGE_ALGORITHM;
-				//printf("Change algorithm...\n");
+				filter = !filter;
+				printf("Change algorithm...\n");
 			}
 			break;
 		default:
 			break;
 		}
 
+		buttonLed <: (2 * paused) + (1 * started) + (filter * 8);
+
+		// Wait before reading next button
+		waitMomentCustom(BUTTONDELAY);
 
 		// Send new status if changed
 		if( old_status == status ) continue;
 
 		toDistributor <: (int)status;
 
-		// Wait before reading next button
-		waitMomentCustom(BUTTONDELAY);
 
-		//buttonLed <: (2 * muteSound) + (4 * pause); ;
 
 		// play sound
 		//if (!muteSound)

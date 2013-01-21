@@ -14,7 +14,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 void worker(chanend distToWorker, chanend workerToColl) {
 	// Flag indicating state of worker
-	bool running;
+	bool running, started;
 
 	// Store value sent from the distributor
 	uchar temp;
@@ -36,10 +36,36 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	// Status of worker is initally pause
 	status = PAUSE;
 
+	started = false;
+
 	// Be ready to process threads
 	while(running) {
+		status_t old_status;
 
 		result = 0;
+		old_status = status;
+
+		if(!started) {
+			select {
+				case distToWorker :> status:
+					break;
+				default:
+					break;
+			}
+
+			if(status == RUNNING) {
+				started = true;
+				continue;
+			}
+
+			if(status == CHANGE_ALGORITHM) {
+				if(filter == AVG) filter = MEDIAN;
+				else if(filter == MEDIAN) filter = AVG;
+				status = old_status;
+			}
+		}
+
+		if(status == PAUSE) continue;
 
 		if( filter == AVG ) {
 			// Get pixels to blur from the distributor
