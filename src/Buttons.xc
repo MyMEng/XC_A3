@@ -44,39 +44,41 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 			if( !started ) {
 				status = RUNNING;
 				started = true;
-				printf("Start...\n");
+				//printf("Start...\n");
 			}
 			break;
 		case buttonB:
 			if( status == RUNNING ) {
 				status = PAUSE;
-				printf("Pause...\n");
+				//printf("Pause...\n");
 			} else if( status == PAUSE && started ) {
-				printf("Resume...\n");
+				//printf("Resume...\n");
 				status = RUNNING;
 			}
 			break;
 		case buttonC:
 			status = TERMINATE;
 			running = false;
-			printf("Terminate...\n");
+			//printf("Terminate...\n");
 			break;
 		case buttonD:
 			if(!started) {
 				toDistributor <: CHANGE_ALGORITHM;
-				printf("Change algorithm...\n");
+				//printf("Change algorithm...\n");
 			}
 			break;
 		default:
 			break;
 		}
 
-		// Wait before reading next button
-		waitMomentCustom(BUTTONDELAY);
 
 		// Send new status if changed
-		if( old_status != status)
-			toDistributor <: (int)status;
+		if( old_status == status ) continue;
+
+		toDistributor <: (int)status;
+
+		// Wait before reading next button
+		waitMomentCustom(BUTTONDELAY);
 
 		//buttonLed <: (2 * muteSound) + (4 * pause); ;
 
@@ -84,8 +86,6 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 		//if (!muteSound)
 		//	playSound(200000, spkr, 15);
 
-		// send button pattern to userAnt
-		//if(sendToUser)
-		//	toUserAnt <: r;
+
 	}
 }
