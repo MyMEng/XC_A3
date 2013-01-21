@@ -44,21 +44,28 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 			if( !started ) {
 				status = RUNNING;
 				started = true;
+				printf("Start...\n");
 			}
 			break;
 		case buttonB:
-			if( status == RUNNING )
+			if( status == RUNNING ) {
 				status = PAUSE;
-			else if( status == PAUSE )
+				printf("Pause...\n");
+			} else if( status == PAUSE && started ) {
+				printf("Resume...\n");
 				status = RUNNING;
+			}
 			break;
 		case buttonC:
 			status = TERMINATE;
 			running = false;
+			printf("Terminate...\n");
 			break;
 		case buttonD:
-			if(!started)
+			if(!started) {
 				toDistributor <: CHANGE_ALGORITHM;
+				printf("Change algorithm...\n");
+			}
 			break;
 		default:
 			break;
