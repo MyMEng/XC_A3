@@ -22,20 +22,26 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	// Remeber average of nine pixels
 	int result;
 
-	bool buttonDpressed;
+	// Worker status
+	status_t status;
+
+	filter_t filter;
 
 	// Set running to true
 	running = true;
 
-	//Status of button D
-	buttonDpressed = true;
+	// Default filter
+	filter = AVG;
+
+	// Status of worker is initally pause
+	status = PAUSE;
 
 	// Be ready to process threads
 	while(running) {
 
 		result = 0;
 
-		if(buttonDpressed == false) {
+		if( filter == AVG ) {
 			// Get pixels to blur from the distributor
 			for(int i = 0; i < PIXELS; i++) {
 				distToWorker :> temp;
@@ -44,7 +50,7 @@ void worker(chanend distToWorker, chanend workerToColl) {
 
 			// Take the average
 			result /= PIXELS;
-		} else {
+		} else if( filter == MEDIAN ){
 			int val[9];
 
 			// Put pixels to array

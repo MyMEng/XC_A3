@@ -29,6 +29,13 @@ typedef enum {
 	TERMINATE = 259
 } status_t;
 
+// Define avaliable filters
+typedef enum {
+	AVG = 260,
+	MEDIAN = 261,
+	CHANGE_ALGORITHM = 262
+} filter_t;
+
 // Number of pixels to send/process
 #define PIXELS 9
 

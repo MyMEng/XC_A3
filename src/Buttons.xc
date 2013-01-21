@@ -15,10 +15,19 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 	// Temp value indicating pressed button
 	unsigned int r;
 
-	// Is button listener running?
-	bool running = true;
+	// Started?
+	bool started;
 
-	status_t status = PAUSE;
+	// Status of buttons
+	status_t status;
+
+	// Is button listener running?
+	bool running;
+
+	running = true;
+	started = false;
+
+	status = PAUSE;
 
 	while ( running ) {
 		// Used to check status changes
@@ -32,24 +41,35 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 
 		// Start the process
 		case buttonA:
-			status = RUNNING;
+			if( !started ) {
+				status = RUNNING;
+				started = true;
+			}
 			break;
 		case buttonB:
-			status = PAUSE;
+			if( status == RUNNING )
+				status = PAUSE;
+			else if( status == PAUSE )
+				status = RUNNING;
 			break;
 		case buttonC:
 			status = TERMINATE;
 			running = false;
 			break;
 		case buttonD:
+			if(!started)
+				toDistributor <: CHANGE_ALGORITHM;
 			break;
 		default:
 			break;
 		}
 
+		// Wait before reading next button
+		waitMomentCustom(BUTTONDELAY);
+
 		// Send new status if changed
 		if( old_status != status)
-			toDistributor <: status;
+			toDistributor <: (int)status;
 
 		//buttonLed <: (2 * muteSound) + (4 * pause); ;
 

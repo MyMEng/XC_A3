@@ -26,12 +26,13 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 	// Remeber current pixel processed
 	int pix;
-	bool lines, running;
+	bool lines, running, started;
 
 	// No lines are read initially
 	lines = false;
 	pix = 0;
 	running = true;
+	started = false;
 	totalLines = 0;
 
 	// Set status to 'paused'
@@ -39,16 +40,25 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 	while(running) {
 
-		if( status == PAUSE ) {
-			select {
-				case fromButtons :> status:
-					break;
-				default:
-					break;
-			}
+		select {
+			case fromButtons :> status:
+				break;
+			default:
+				break;
+		}
 
-			if(status == PAUSE)
-				continue;
+		if(status == PAUSE)
+			continue;
+
+		if(status == CHANGE_ALGORITHM && !started) {
+
+			// Notify about changed algorithms
+			for(int i = 0; i < WORKERNO; i++)
+				distToWorker[i] <: CHANGE_ALGORITHM;
+
+			// Switch back to pause
+			status = PAUSE;
+			continue;
 		}
 
 		// Read image to an array and save

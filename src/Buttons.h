@@ -13,6 +13,9 @@
 #define buttonC 11
 #define buttonD 7
 
+// Delay for buttons
+#define BUTTONDELAY 3200000
+
 // Button listener that communicates with distributor in order to
 // Start, pause and terminate bluring
 void buttonListener(in port b, out port spkr, chanend toDistributor);
