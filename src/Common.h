@@ -40,7 +40,7 @@ typedef enum {
 #define PIXELS 9
 
 // Define black color
-#define BLACK 0x0;
+#define BLACK (-1);
 
 // Default delay used by wait moment
 #define DEFAULTDELAY 8000000

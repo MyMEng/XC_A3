@@ -14,7 +14,7 @@
 #define buttonD 7
 
 // Delay for buttons
-#define BUTTONDELAY 6400000
+#define BUTTONDELAY 64000000
 
 // Button listener that communicates with distributor in order to
 // Start, pause and terminate bluring

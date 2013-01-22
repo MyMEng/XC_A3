@@ -52,7 +52,6 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 		if(status == CHANGE_ALGORITHM && !started) {
 
-			printf("chnge algoruithm\n");
 
 			// Notify about changed algorithms
 			for(int i = 0; i < WORKERNO; i++)

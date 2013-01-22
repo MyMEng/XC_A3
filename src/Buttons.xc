@@ -72,7 +72,7 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 			if(!started) {
 				toDistributor <: CHANGE_ALGORITHM;
 				filter = !filter;
-				printf("Change algorithm...\n");
+				//printf("Change algorithm...\n");
 			}
 			break;
 		default:

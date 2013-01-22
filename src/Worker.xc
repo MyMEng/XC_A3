@@ -41,7 +41,9 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	// Be ready to process threads
 	while(running) {
 		status_t old_status;
+		bool isBlack;
 
+		isBlack = false;
 		result = 0;
 		old_status = status;
 
@@ -70,8 +72,13 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		if( filter == AVG ) {
 			// Get pixels to blur from the distributor
 			for(int i = 0; i < PIXELS; i++) {
+				int v;
 				distToWorker :> temp;
-				result += (int)temp;
+				v = (int) temp;
+				result += v;
+				if(v == (-1)) {
+					isBlack = true;
+				}
 			}
 
 			// Take the average
@@ -81,8 +88,11 @@ void worker(chanend distToWorker, chanend workerToColl) {
 
 			// Put pixels to array
 			for(int i = 0; i < PIXELS; i++) {
+				int v;
 				distToWorker :> temp;
-				val[i] = (int)temp;
+				v = (int)temp;
+				val[i] = v;
+				if(v == (-1)) isBlack = true;
 			}
 
 			for(int i = 0; i < 9; i ++) {
@@ -110,9 +120,12 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		}
 		*/
 
-
-		// Send result to a collector
-		workerToColl <: (uchar)result;
+		if(isBlack) {
+			workerToColl <: (uchar)0;
+		} else {
+			// Send result to a collector
+			workerToColl <: (uchar)result;
+		}
 	}
 
 

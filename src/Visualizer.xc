@@ -50,10 +50,10 @@ void visualiser(chanend fromCollector,
     // I + II = 48
 	// I + II + III = 112
 	// Clear quadrants
-	toQuadrant0 <: 16;
-	toQuadrant1 <: 32;
-	toQuadrant2 <: 64;
-	toQuadrant3 <: 112;
+	toQuadrant0 <: 0;
+	toQuadrant1 <: 0;
+	toQuadrant2 <: 0;
+	toQuadrant3 <: 0;
 
 
 	while(running) {
