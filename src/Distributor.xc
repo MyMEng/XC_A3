@@ -26,13 +26,14 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 	// Remeber current pixel processed
 	int pix;
-	bool lines, running, started;
+	bool lines, running, started, processing;
 
 	// No lines are read initially
 	lines = false;
 	pix = 0;
 	running = true;
 	started = false;
+	processing = true;
 	totalLines = 0;
 
 	// Set status to 'paused'
@@ -70,6 +71,22 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 		if(status == PAUSE)
 			continue;
 
+		// Listen for workers
+		for(int i = 0; i < WORKERNO; i++) {
+			select {
+				case distToWorker[i] :> status:
+					if(status == FINISHED) {
+						running = false;
+						processing = false;
+					}
+				break;
+				default:
+					break;
+			}
+		}
+		if(processing == false) {
+			continue;
+		}
 		// Read image to an array and save
 		if(lines == false) {
 			// Fill first row with black
@@ -177,9 +194,9 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 		// If you read all lines and processed last one, finish
 		if( totalLines == IMHT + 1 ) {
-			running = false;
+			processing = false;
 		}
 	}
-
+	c_in <: FINISHED;
 	printf( "ProcessImage:Done...\n" );
 }

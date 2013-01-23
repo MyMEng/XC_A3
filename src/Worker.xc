@@ -67,13 +67,34 @@ void worker(chanend distToWorker, chanend workerToColl) {
 			}
 		}
 
+		select {
+			case workerToColl :> status:
+				break;
+			default:
+				break;
+		}
+		if(status == FINISHED) {
+			distToWorker <: FINISHED;
+			running = false;
+			break;
+		}
 		if(status == PAUSE) continue;
 
 		if( filter == AVG ) {
 			// Get pixels to blur from the distributor
 			for(int i = 0; i < PIXELS; i++) {
 				int v;
-				distToWorker :> temp;
+				select {
+					case workerToColl :> status:
+						break;
+					case distToWorker :> temp:
+						break;
+				}
+				if(status == FINISHED) {
+					distToWorker <: FINISHED;
+					running = false;
+					break;
+				}
 				v = (int) temp;
 				result += v;
 				if(v == (-1)) {
@@ -81,8 +102,11 @@ void worker(chanend distToWorker, chanend workerToColl) {
 				}
 			}
 
-			// Take the average
-			result /= PIXELS;
+			// Take the averagei
+
+			if(!isBlack) result /= PIXELS;
+			else result = 0;
+
 		} else if( filter == MEDIAN ){
 			int val[9];
 
@@ -95,6 +119,7 @@ void worker(chanend distToWorker, chanend workerToColl) {
 				if(v == (-1)) isBlack = true;
 			}
 
+			if(!isBlack) {
 			for(int i = 0; i < 9; i ++) {
 				int temp;
 				int min = i;
@@ -108,6 +133,9 @@ void worker(chanend distToWorker, chanend workerToColl) {
 				val[min] = temp;
 			}
 			result = val[4];
+			} else {
+				result = 0;
+			}
 		}
 
 		/*
@@ -120,12 +148,9 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		}
 		*/
 
-		if(isBlack) {
-			workerToColl <: (uchar)0;
-		} else {
-			// Send result to a collector
-			workerToColl <: (uchar)result;
-		}
+
+		// Send result to a collector
+		workerToColl <: (uchar)result;
 	}
 
 

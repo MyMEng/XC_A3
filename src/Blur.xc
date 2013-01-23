@@ -22,7 +22,7 @@
 
 // input image path
 //char infname[] = "D:\\test.pgm";
-char infname[] = "/Users/kacper/XMOS/XC_A3/testS.pgm";
+char infname[] = "/Users/kacper/XMOS/XC_A3/test0.pgm";
 
 // output image path
 //char outfname[] = "D:\\testout.pgm";
@@ -42,7 +42,7 @@ out port speaker = PORT_SPEAKER;
 //
 /////////////////////////////////////////////////////////////////////////////
 void DataInStream(char infname[], chanend c_out) {
-	int res;
+	int res, signal;
 	uchar line[ IMWD ];
 	printf( "DataInStream:Start...\n" );
 	res = _openinpgm( infname, IMWD, IMHT );
@@ -55,6 +55,16 @@ void DataInStream(char infname[], chanend c_out) {
 		_readinline( line, IMWD );
 
 		for( int x = 0; x < IMWD; x++ ) {
+			select {
+				case c_out :> signal:
+					if(signal == FINISHED) {
+						_closeinpgm();
+						return;
+					}
+					break;
+				default:
+					break;
+			}
 			c_out <: line[ x ];
 			//uncomment to show image values
 			//printf( "-%4.1d ", line[ x ] );
@@ -93,6 +103,8 @@ void DataOutStream(char outfname[], chanend c_in) {
 		_writeoutline( line, IMWD );
 	}
 	_closeoutpgm();
+	printf( "DataOutStream:...\n" );
+	c_in <: FINISHED;
 	printf( "DataOutStream:Done...\n" );
 	return;
 }
