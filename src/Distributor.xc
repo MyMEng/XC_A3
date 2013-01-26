@@ -41,7 +41,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 	w = 0;
 	// Set status to 'paused'
 	status = PAUSE;
-
+	sentLine = 0;
 	while(running) {
 
 		select {
@@ -122,12 +122,11 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 		}
 
 		// Now send second lines to workers
-		sentLine = 1;
+
 		for( pix = 0; pix < IMWD; pix = pix + 3)  {
 
 			// Data packet
 			data_packet_t packet;
-
 
 			// How many pixels will I send?
 			packet.count = 3;
@@ -136,6 +135,25 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 				packet.count = 1;
 			else if(IMWD - pix == 2)
 				packet.count = 2;
+
+
+			// First line is entire black
+			if(sentLine == 0 || sentLine == IMHT - 1) {
+				// First and last line are entierly black
+				packet.blacks = packet.count;
+			} else if(IMWD - pix == 3) {
+				// The only pixel left is black
+				packet.blacks = 2;
+			} else if(IMWD - pix == 2) {
+				// One of two pixels left is black
+				packet.blacks = 1;
+			} else if(IMWD - pix == 1 || pix == 0) {
+				packet.blacks = 0;
+			} else {
+				packet.blacks = -1; // Nothing is black
+			}
+
+
 
 			// Send left top
 			if( pix - 1 < 0 ) {
@@ -251,6 +269,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			if(w >= WORKERNO)
 				w = 0;
 		}
+		sentLine++;
 
 		// If you read all lines and processed last one, finish
 		if( totalLines == IMHT + 1 ) {

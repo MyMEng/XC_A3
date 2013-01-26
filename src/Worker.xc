@@ -101,6 +101,7 @@ void worker(chanend distToWorker, chanend workerToColl) {
 
 		res.count = packet.count;
 
+
 		for(int j = 0; j < packet.count; j++) {
 			int start, end; // Start end indices of pixel and surrounding
 
@@ -109,38 +110,48 @@ void worker(chanend distToWorker, chanend workerToColl) {
 
 			if( filter == AVG ) {
 				result = 0;
-				// Sum all pixels
-				for(int i = start; i < end; i++) {
-					result += (int)packet.pixels[i];
+
+				if(packet.blacks == packet.count || packet.blacks == j) {
+					res.pixel[j] = BLACK;
+				} else {
+					// Sum all pixels
+					for(int i = start; i < end; i++) {
+						result += (int)packet.pixels[i];
+					}
+					// Take the average
+					result /= 9;
+
+					res.pixel[j] = (uchar)result;
+					//printf("Result: %d\n", result);
 				}
-
-				// Take the average
-				result /= 9;
-
-				res.pixel[j] = (uchar)result;
-				//printf("Result: %d\n", result);
 
 			} else if( filter == MEDIAN ){
-				uchar vals[9];
-				for(int i = start, k=0; i < end; ++i, ++k) {
-					vals[k] = packet.pixels[i];
-				}
-				// Put pixels to array
-				for(int i = 0; i < 9; ++i) {
-					int temp = 0;
-					int min = i;
-					for(int y = i; y < 9; y ++) {
-						if(vals[min] > vals[y]) {
-							min = y;
-						}
+				// Border pixel, don't bother doing anything
+				if(packet.blacks == packet.count || packet.blacks == j) {
+					res.pixel[j] = BLACK;
+				} else {
+					uchar vals[9];
+					for(int i = start, k=0; i < end; ++i, ++k) {
+						vals[k] = packet.pixels[i];
 					}
-					temp = vals[i];
-					vals[i] = vals[min];
-					vals[min] = temp;
-				}
+					// Put pixels to array
+					for(int i = 0; i < 9; ++i) {
+						int temp = 0;
+						int min = i;
+						for(int y = i; y < 9; y ++) {
+							if(vals[min] > vals[y]) {
+								min = y;
+							}
+						}
+						temp = vals[i];
+						vals[i] = vals[min];
+						vals[min] = temp;
+					}
 
-				result = vals[4];
-				res.pixel[j] = (uchar)result;
+					result = vals[4];
+
+					res.pixel[j] = (uchar)result;
+				}
 			}
 		}
 		// Send result to a collector
