@@ -7,7 +7,7 @@
 
 #include "Common.h"
 #include "Visualizer.h"
-
+#include <stdio.h>
 // Define ports
 
 // Leds, buttons and speaker ports
@@ -17,9 +17,13 @@ out port cledR = PORT_CLOCKLED_SELR;
 //DISPLAYS an LED pattern in one quadrant of the clock LEDs
 int showLED(out port p, chanend fromVisualiser) {
 	unsigned int lightUpPattern;
-
-	while (true) {
+	bool running = true;
+	while (running) {
 		fromVisualiser :> lightUpPattern; //read LED pattern from visualiser process
+		if(lightUpPattern == TERMINATE) {
+			running = false;
+			continue;
+		}
 		p <: lightUpPattern; //send pattern to LEDs
 	}
 	return 0;
@@ -62,6 +66,11 @@ void visualiser(chanend fromCollector,
 			case fromCollector :> progress:
 				break;
 		}
+
+		if(progress == TERMINATE) {
+			running = false;
+			continue;
+		}
 		q0 = 0; q1 = 0; q2 = 0; q3 = 0;
 
 		// Set value quadrants according to the progreess
@@ -96,4 +105,9 @@ void visualiser(chanend fromCollector,
 		toQuadrant2 <: q2;
 		toQuadrant3 <: q3;
 	}
+	printf("Visualizer dies!\n");
+	toQuadrant0 <: TERMINATE;
+	toQuadrant1 <: TERMINATE;
+	toQuadrant2 <: TERMINATE;
+	toQuadrant3 <: TERMINATE;
 }

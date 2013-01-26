@@ -52,22 +52,48 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 		}
 
 		if(status == CHANGE_ALGORITHM && !started) {
-
+			data_packet_t p;
+			p.count = 0;
+			p.status = CHANGE_ALGORITHM;
 			// Notify about changed algorithms
 			for(int i = 0; i < WORKERNO; i++)
-				distToWorker[i] <: CHANGE_ALGORITHM;
+				distToWorker[i] <: p;
 
 			// Switch back to pause
 			status = PAUSE;
 			continue;
 		} else if( status == RUNNING && !started ) {
+			data_packet_t p;
+			p.count = 0;
+			p.status = RUNNING;
+
 			// Notify about changed algorithms
 			for(int i = 0; i < WORKERNO; i++)
-				distToWorker[i] <: RUNNING;
+				distToWorker[i] <: p;
 			started = true;
+		} else if( status == TERMINATE) {
+			int flush;
+			data_packet_t p;
+			p.count = 0;
+			p.status = TERMINATE;
+
+			printf("Got terminate\n");
+
+			// Terminate data in stream
+			c_in <: TERMINATE;
+
+			// Terminate workers
+			for(int i = 0; i < WORKERNO; ++i) {
+				printf("Terminate worker %d\n",i);
+
+				distToWorker[i] <: p;
+			}
+
+			// Go and terminate yourself
+			running = false;
 		}
 
-		if(status == PAUSE)
+		if(status == PAUSE || status == TERMINATE)
 			continue;
 
 		// Listen for workers
@@ -96,6 +122,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 			// Read data to new two lines
 			for( int y = 1; y < 3; y++ ) {
+				c_in <: NEXTLINE;
 				for( int x = 0; x < IMWD; x++ ) {
 					c_in :> buf[y][x];
 				}
@@ -105,16 +132,23 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			lines = true;
 		} else  {
 
-			for(int i = 0; i < IMWD; i++) {
-				// Move image lines up in the buffer
-				buf[0][i] = buf[1][i];
-				buf[1][i] = buf[2][i];
 
-				if(totalLines == IMHT) {
-					// Fill black if finished
+
+			if(totalLines == IMHT) {
+				// Fill black if finished
+				for(int i = 0; i < IMWD; i++) {
+					// Move image lines up in the buffer
+					buf[0][i] = buf[1][i];
+					buf[1][i] = buf[2][i];
 					buf[2][i] = BLACK;
-				} else {
-					// Read new line
+				}
+			} else {
+				c_in <: NEXTLINE;
+				// Read new line
+				for(int i = 0; i < IMWD; i++) {
+					// Move image lines up in the buffer
+					buf[0][i] = buf[1][i];
+					buf[1][i] = buf[2][i];
 					c_in :> buf[2][i];
 				}
 			}
@@ -127,6 +161,8 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 			// Data packet
 			data_packet_t packet;
+
+			packet.status = status;
 
 			// How many pixels will I send?
 			packet.count = 3;
@@ -276,6 +312,6 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			processing = false;
 		}
 	}
-	c_in <: FINISHED;
+	//c_in <: FINISHED;
 	printf( "ProcessImage:Done...\n" );
 }

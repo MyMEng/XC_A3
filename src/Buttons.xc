@@ -65,7 +65,12 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 			break;
 		case buttonC:
 			status = TERMINATE;
-			running = false;
+			if(old_status != status) {
+				toDistributor <: PAUSE;
+				toDistributor <: TERMINATE;
+				running = false;
+			}
+
 			//printf("Terminate...\n");
 			break;
 		case buttonD:
@@ -78,6 +83,9 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 		default:
 			break;
 		}
+
+		if(!running)
+			continue;
 
 		buttonLed <: (2 * paused) + (1 * started) + (filter * 8);
 
@@ -97,4 +105,5 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 
 
 	}
+	printf("Buttons shut down\n");
 }

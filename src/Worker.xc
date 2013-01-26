@@ -40,26 +40,28 @@ void worker(chanend distToWorker, chanend workerToColl) {
 	// Status of worker is initally pause
 	status = PAUSE;
 
+
 	started = false;
 
 	// Be ready to process threads
 	while(running) {
 		status_t old_status;
-		bool isBlack;
 
-		isBlack = false;
-		result = 0;
 		old_status = status;
+		result = 0;
+		packet.count = 0;
 
 		if(!started) {
 			select {
-				case distToWorker :> status:
+				case distToWorker :> packet:
+					status = packet.status;
 					break;
 				default:
 					break;
 			}
 
 			if(status == RUNNING) {
+				printf("WOrker got running\n");
 				started = true;
 				continue;
 			}
@@ -74,21 +76,35 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		select {
 			case workerToColl :> status:
 				break;
+			case distToWorker :> packet:
+				status = packet.status;
+				break;
 			default:
 				break;
 		}
+
+		res.status = status;
+
 		if(status == FINISHED) {
 			distToWorker <: FINISHED;
 			running = false;
 			break;
+		} else if(status == TERMINATE) {
+			printf("Worker got terminate!\n");
+			workerToColl <: res;
+			running = false;
+			continue;
 		}
-		if(status == PAUSE) continue;
 
+		if(status == PAUSE) continue;
 
 		select {
 			case workerToColl :> status:
 				break;
 			case distToWorker :> packet:
+				status = packet.status;
+				break;
+			default:
 				break;
 		}
 
@@ -98,6 +114,9 @@ void worker(chanend distToWorker, chanend workerToColl) {
 			running = false;
 			break;
 		}
+
+		if(packet.count == 0)
+			continue;
 
 		res.count = packet.count;
 

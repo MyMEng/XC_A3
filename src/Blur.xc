@@ -64,22 +64,20 @@ void DataInStream(char infname[], chanend c_out) {
 	for( int y = 0; y < IMHT; y++ ){
 		_readinline( line, IMWD );
 
-		for( int x = 0; x < IMWD; x++ ) {
-			select {
-				case c_out :> signal:
-					if(signal == FINISHED) {
-						_closeinpgm();
-						return;
+		select {
+			case c_out :> signal:
+				if(signal == FINISHED || signal ==  TERMINATE) {
+					_closeinpgm();
+					printf( "DataInStream:Done...\n" );
+					return;
+				} else if (signal == NEXTLINE) {
+					for( int x = 0; x < IMWD; x++ ) {
+						c_out <: line[ x ];
 					}
-					break;
-				default:
-					break;
-			}
-			c_out <: line[ x ];
-			//uncomment to show image values
-			//printf( "-%4.1d ", line[ x ] );
+				}
+				break;
 		}
-		//uncomment to show image values
+				//uncomment to show image values
 		//printf( "\n" );
 	}
 
@@ -96,6 +94,7 @@ void DataInStream(char infname[], chanend c_out) {
 void DataOutStream(char outfname[], chanend c_in) {
 	int res;
 	uchar line[ IMWD ];
+	uchar temp;
 
 	printf( "DataOutStream:Start...\n" );
 	res = _openoutpgm( outfname, IMWD, IMHT );
@@ -106,7 +105,16 @@ void DataOutStream(char outfname[], chanend c_in) {
 	}
 	for( int y = 0; y < IMHT; y++ ) {
 		for( int x = 0; x < IMWD; x++ ) {
-	   c_in :> line[ x ];
+		   c_in :> temp;
+
+		   if(temp == (uchar)(TERMINATE)) {
+			   printf( "DataOutStream: close output\n" );
+			   _closeoutpgm();
+			   	printf( "DataOutStream: Terminate\n" );
+			   	return;
+		   } else {
+			   line[x] = temp;
+		   }
 		  //printf( "+%4.1d ", line[ x ] );
 		}
 		//printf( "\n" );

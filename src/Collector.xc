@@ -22,35 +22,57 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualiz
 	int noPixels;	// Number of pixels read
 	int signal;
 	const int maxPixels = (IMHT*IMWD); // Maxium number of pixels to be processed
-
+	bool workersRunning[WORKERNO];
 	// Initialize variables
 	running = true;
 	noPixels = 0;
 	signal = 0;
 
+	// Assume all workers are running
+	for(int i = 0; i < WORKERNO; ++i)
+		workersRunning[i] = true;
+
 	while(running) {
-		for(int  w = 0; w < WORKERNO; w++  ) {
+		int status;
+
+		for(int  w = 0; w < WORKERNO; ++w ) {
+
+			if(!workersRunning[w])
+				continue;
+
 			select {
 				case c_out :> signal:
 					running = false;
 					//printf("Got finished signal in collector\n");
 					break;
 				case workerToColl[w] :> res:
-					//printf("Worker %d sent me %d pixels\n", w, res.count);
-					for(int i = 0; i < res.count; ++i) {
-						c_out <: res.pixel[i];
+
+					if(res.status == TERMINATE) {
+						workersRunning[w] = false;
+					} else {
+						//printf("Worker %d sent me %d pixels\n", w, res.count);
+						for(int i = 0; i < res.count; ++i) {
+							c_out <: res.pixel[i];
+						}
+						noPixels += res.count;
+						toVisualizer <: (int)(noPixels * 100 / maxPixels);
+
 					}
-					noPixels += res.count;
-					toVisualizer <: (int)(noPixels * 100 / maxPixels);
 					break;
 			}
-			if(signal == FINISHED || !running)
-				break;
+
+			// Check if all workers are alive
+			for(int i = 0; i < WORKERNO; ++i) {
+				running = running & workersRunning[i];
+			}
 		}
 	}
 
-	for(int  w = 0; w < WORKERNO; w++)
-		workerToColl[w] <: FINISHED;
+	printf("Collector send terminate to c_out\n");
+	c_out <: (uchar)TERMINATE;
+	toVisualizer <: TERMINATE;
+	//for(int  w = 0; w < WORKERNO; w++)
+	//	workerToColl[w] <: FINISHED;
 
 	printf("Collector finished...\n");
 }

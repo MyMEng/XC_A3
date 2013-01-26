@@ -18,6 +18,8 @@ typedef struct {
 	// Processed pixels
 	uchar pixel[MAXCOUNT];
 
+	int status;
+
 } result_t;
 
 void worker(chanend distToWorker, chanend workerToColl);
