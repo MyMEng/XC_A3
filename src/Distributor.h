@@ -11,9 +11,9 @@
 
 typedef struct {
 	uchar pixels[PIXELS];
+	int blacks;
 	// How many pixels should a worker blur in this packet?
-	int count;
-	int x, y;
+	unsigned int count;
 } data_packet_t;
 
 void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButtons);

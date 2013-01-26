@@ -121,25 +121,25 @@ void worker(chanend distToWorker, chanend workerToColl) {
 				//printf("Result: %d\n", result);
 
 			} else if( filter == MEDIAN ){
-
+				uchar vals[9];
+				for(int i = start, k=0; i < end; ++i, ++k) {
+					vals[k] = packet.pixels[i];
+				}
 				// Put pixels to array
-				for(int i = start; i < end; i ++) {
+				for(int i = 0; i < 9; ++i) {
 					int temp = 0;
 					int min = i;
-					for(int y = i; y < end; y ++) {
-						if(packet.pixels[min] > packet.pixels[y]) {
+					for(int y = i; y < 9; y ++) {
+						if(vals[min] > vals[y]) {
 							min = y;
 						}
 					}
-					temp = packet.pixels[i];
-					packet.pixels[i] = packet.pixels[min];
-					packet.pixels[min] = temp;
+					temp = vals[i];
+					vals[i] = vals[min];
+					vals[min] = temp;
 				}
-				if(j == 0) {
-					result = packet.pixels[4];
-				} else {
-					result = packet.pixels[7];
-				}
+
+				result = vals[4];
 				res.pixel[j] = (uchar)result;
 			}
 		}

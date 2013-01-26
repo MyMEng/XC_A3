@@ -222,6 +222,30 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 			packet.pixels[11] = val;
 
+			// Send most-right top
+			if( pix + 3 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[ 0 ][ pix + 3 ];
+			}
+			packet.pixels[12] = val;
+
+			if( pix + 3 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[ 1 ][ pix + 3 ];
+			}
+			packet.pixels[13] = val;
+
+			// Send bottom right
+			if(pix + 3 >= IMWD ) {
+				val = BLACK;
+			} else {
+				val = buf[ 2 ][ pix + 3 ];
+			}
+
+			packet.pixels[14] = val;
+
 			distToWorker[w] <: packet;
 			w++;
 			if(w >= WORKERNO)
