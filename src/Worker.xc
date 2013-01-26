@@ -85,11 +85,7 @@ void worker(chanend distToWorker, chanend workerToColl) {
 
 		res.status = status;
 
-		if(status == FINISHED) {
-			distToWorker <: FINISHED;
-			running = false;
-			break;
-		} else if(status == TERMINATE) {
+		if(status == TERMINATE) {
 			printf("Worker got terminate!\n");
 			workerToColl <: res;
 			running = false;
@@ -108,18 +104,11 @@ void worker(chanend distToWorker, chanend workerToColl) {
 				break;
 		}
 
-
-		if(status == FINISHED) {
-			distToWorker <: FINISHED;
-			running = false;
-			break;
-		}
-
+		// Nothing to be processed, skip
 		if(packet.count == 0)
 			continue;
 
 		res.count = packet.count;
-
 
 		for(int j = 0; j < packet.count; j++) {
 			int start, end; // Start end indices of pixel and surrounding

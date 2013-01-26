@@ -71,8 +71,6 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualiz
 	printf("Collector send terminate to c_out\n");
 	c_out <: (uchar)TERMINATE;
 	toVisualizer <: TERMINATE;
-	//for(int  w = 0; w < WORKERNO; w++)
-	//	workerToColl[w] <: FINISHED;
 
 	printf("Collector finished...\n");
 }

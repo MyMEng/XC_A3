@@ -16,8 +16,8 @@ typedef unsigned int bool;
 #define false 0
 
 // Image height and width
-#define IMHT 64
-#define IMWD 100
+#define IMHT 16
+#define IMWD 16
 
 // Maximum number of workers
 #define WORKERNO 4
@@ -27,7 +27,6 @@ typedef enum {
 	PAUSE = 257,
 	RUNNING = 258,
 	TERMINATE = 259,
-	FINISHED = 300,
 	NEXTLINE = 400
 } status_t;
 

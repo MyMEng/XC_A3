@@ -39,7 +39,20 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 		status_t old_status;
 
 		// check if some buttons are pressed
-		b when pinsneq(15) :> r;
+		select {
+			case toDistributor :> status:
+				if(status == TERMINATE) {
+					running = false;
+				}
+				break;
+			case b when pinsneq(15) :> r:
+				break;
+		}
+
+		// Just in case status changed
+		if(! running ) {
+			continue;
+		}
 
 		old_status = status;
 		switch( r ) {

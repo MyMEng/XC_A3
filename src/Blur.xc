@@ -66,7 +66,7 @@ void DataInStream(char infname[], chanend c_out) {
 
 		select {
 			case c_out :> signal:
-				if(signal == FINISHED || signal ==  TERMINATE) {
+				if(signal ==  TERMINATE) {
 					_closeinpgm();
 					printf( "DataInStream:Done...\n" );
 					return;
@@ -121,9 +121,11 @@ void DataOutStream(char outfname[], chanend c_in) {
 		_writeoutline( line, IMWD );
 	}
 	_closeoutpgm();
-	printf( "DataOutStream:...\n" );
-	c_in <: FINISHED;
-	printf( "DataOutStream:Done...\n" );
+
+	// Wait for terminate to come
+	c_in :> temp;
+	printf( "DataOutStream: close output\n" );
+
 	return;
 }
 
