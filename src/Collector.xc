@@ -8,6 +8,7 @@
 
 #include "Common.h"
 #include "Collector.h"
+#include "Worker.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -17,7 +18,7 @@
 void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualizer) {
 	// Declare variables
 	bool running;	// Is collector runnning?
-	uchar pixel;	// Buffer
+	result_t res;	// Buffer
 	int noPixels;	// Number of pixels read
 	int signal;
 	const int maxPixels = (IMHT*IMWD); // Maxium number of pixels to be processed
@@ -32,11 +33,14 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualiz
 			select {
 				case c_out :> signal:
 					running = false;
-					printf("Got finished signal in collector\n");
+					//printf("Got finished signal in collector\n");
 					break;
-				case workerToColl[w] :> pixel:
-					c_out <: pixel;
-					noPixels++;
+				case workerToColl[w] :> res:
+					//printf("Worker %d sent me %d pixels\n", w, res.count);
+					for(int i = 0; i < res.count; ++i) {
+						c_out <: res.pixel[i];
+					}
+					noPixels += res.count;
 					toVisualizer <: (int)(noPixels * 100 / maxPixels);
 					break;
 			}

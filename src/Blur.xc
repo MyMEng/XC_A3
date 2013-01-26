@@ -22,11 +22,21 @@
 
 // input image path
 //char infname[] = "D:\\test.pgm";
-char infname[] = "/Users/kacper/XMOS/XC_A3/test0.pgm";
+
+
+//#if defined(WIN32) || defined (__CYGWIN__)
+	#define INPATH "D:\\test.pgm"
+	#define OUTPATH "D:\\testout.pgm"
+//#elif defined(__LINUX__) || defined (__linux__) || defined (__APPLE__)
+//	#define INPATH "/Users/kacper/XMOS/XC_A3/test0.pgm"
+//	#define OUTPATH "/Users/kacper/XMOS/XC_A3/testOUT.pgm"
+//#endif
+
+char infname[] = INPATH;
 
 // output image path
 //char outfname[] = "D:\\testout.pgm";
-char outfname[] = "/Users/kacper/XMOS/XC_A3/testOUT.pgm";
+char outfname[] = OUTPATH;
 
 // define ports for led visualization
 out port cled0 = PORT_CLOCKLED_0;

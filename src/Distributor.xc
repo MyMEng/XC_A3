@@ -24,6 +24,9 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 	// Lines read
 	int sentLine, line, totalLines;
 
+	// Next worker number
+	int w;
+
 	// Remeber current pixel processed
 	int pix;
 	bool lines, running, started, processing;
@@ -35,7 +38,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 	started = false;
 	processing = true;
 	totalLines = 0;
-
+	w = 0;
 	// Set status to 'paused'
 	status = PAUSE;
 
@@ -48,11 +51,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 				break;
 		}
 
-
-
-
 		if(status == CHANGE_ALGORITHM && !started) {
-
 
 			// Notify about changed algorithms
 			for(int i = 0; i < WORKERNO; i++)
@@ -89,13 +88,13 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 		}
 		// Read image to an array and save
 		if(lines == false) {
+
 			// Fill first row with black
 			for( int x = 0; x < IMWD; x++ ) {
 				buf[0][x] = BLACK;
-
 			}
-			// Read data to new two lines
 
+			// Read data to new two lines
 			for( int y = 1; y < 3; y++ ) {
 				for( int x = 0; x < IMWD; x++ ) {
 					c_in :> buf[y][x];
@@ -124,11 +123,19 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 
 		// Now send second lines to workers
 		sentLine = 1;
-		for( pix = 0; pix < IMWD; pix++)  {
+		for( pix = 0; pix < IMWD; pix = pix + 3)  {
 
-			int w; // Worker number
-			w = pix % WORKERNO;
-			// Top line
+			// Data packet
+			data_packet_t packet;
+
+
+			// How many pixels will I send?
+			packet.count = 3;
+
+			if(IMWD - pix == 1)
+				packet.count = 1;
+			else if(IMWD - pix == 2)
+				packet.count = 2;
 
 			// Send left top
 			if( pix - 1 < 0 ) {
@@ -136,20 +143,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			} else {
 				val = buf[ 0 ][ pix - 1 ];
 			}
-			distToWorker[ w ] <: val;
-
-
-			// Send top
-			val = buf[ 0 ][ pix ];
-			distToWorker[ w ] <: val;
-
-			// Send top right
-			if( pix + 1 >= IMWD ) {
-				val = BLACK;
-			} else {
-				val = buf[ 0 ][ pix + 1 ];
-			}
-			distToWorker[ w ] <: val;
+			packet.pixels[0] = val;
 
 			// Send middle left
 			if(  pix - 1 < 0 ) {
@@ -157,19 +151,7 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			} else {
 				val = buf[ 1 ][ pix - 1 ];
 			}
-			distToWorker[w] <: val;
-
-			// Send middle
-			val = buf[ 1 ][ pix ];
-			distToWorker[ w ] <: val;
-
-			// Send middle right
-			if( pix + 1 >= IMWD ) {
-				val = BLACK;
-			} else {
-				val = buf[ 1 ][ pix + 1 ];
-			}
-			distToWorker[ w ] <: val;
+			packet.pixels[1] = val;
 
 			// Send bottom left
 			if( pix - 1 < 0) {
@@ -177,10 +159,35 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 			} else {
 				val = buf[ 2 ][ pix - 1 ];
 			}
-			distToWorker[ w ] <: val;
+			packet.pixels[2] = val;
+
+			// Send top
+			val = buf[ 0 ][ pix ];
+			packet.pixels[3] = val;
+
+			// Send middle
+			val = buf[ 1 ][ pix ];
+			packet.pixels[4] = val;
 
 			val = buf[ 2 ][ pix ];
-			distToWorker[ w ] <: val;
+			packet.pixels[5] = val;
+
+			// Send top right
+			if( pix + 1 >= IMWD ) {
+				val = BLACK;
+			} else {
+				val = buf[ 0 ][ pix + 1 ];
+			}
+			packet.pixels[6] = val;
+
+
+			// Send middle right
+			if( pix + 1 >= IMWD ) {
+				val = BLACK;
+			} else {
+				val = buf[ 1 ][ pix + 1 ];
+			}
+			packet.pixels[7] = val;
 
 			// Send bottom right
 			if( line < 0 || pix + 1 >= IMWD ) {
@@ -189,7 +196,36 @@ void distributor(chanend c_in, chanend distToWorker[WORKERNO], chanend fromButto
 				val = buf[ 2 ][ pix + 1 ];
 			}
 
-			distToWorker[ w ] <: val;
+			packet.pixels[8] = val;
+
+			// Send most-right top
+			if( pix + 2 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[ 0 ][ pix + 2 ];
+			}
+			packet.pixels[9] = val;
+
+			if( pix + 2 >= IMWD) {
+				val = BLACK;
+			} else {
+				val = buf[ 1 ][ pix + 2 ];
+			}
+			packet.pixels[10] = val;
+
+			// Send bottom right
+			if(pix + 2 >= IMWD ) {
+				val = BLACK;
+			} else {
+				val = buf[ 2 ][ pix + 2 ];
+			}
+
+			packet.pixels[11] = val;
+
+			distToWorker[w] <: packet;
+			w++;
+			if(w >= WORKERNO)
+				w = 0;
 		}
 
 		// If you read all lines and processed last one, finish

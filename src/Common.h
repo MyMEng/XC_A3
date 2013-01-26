@@ -16,11 +16,11 @@ typedef unsigned int bool;
 #define false 0
 
 // Image height and width
-#define IMHT 16
-#define IMWD 16
+#define IMHT 256
+#define IMWD 400
 
 // Maximum number of workers
-#define WORKERNO 4
+#define WORKERNO 12
 
 // Status of application must be greater than 257 not to confuse it with a value of a pixel
 typedef enum {
@@ -38,10 +38,10 @@ typedef enum {
 } filter_t;
 
 // Number of pixels to send/process
-#define PIXELS 9
+#define PIXELS 12
 
 // Define black color
-#define BLACK (-1);
+#define BLACK 0
 
 // Default delay used by wait moment
 #define DEFAULTDELAY 8000000
@@ -52,6 +52,5 @@ void waitMomentCustom(int delay);
 
 // Use default delay
 void waitMoment();
-
 
 #endif /* COMMON_H_ */
