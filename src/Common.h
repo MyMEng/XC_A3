@@ -16,8 +16,8 @@ typedef unsigned int bool;
 #define false 0
 
 // Image height and width
-#define IMHT 256
-#define IMWD 400
+#define IMHT 200
+#define IMWD 300
 
 // Maximum number of workers
 #define WORKERNO 8
