@@ -158,7 +158,7 @@ int main() {
 		on stdcore[0] : buttonListener(buttons, speaker, buttonsToDistributor);
 
 		// Start distributor thread and connect it with workers
-		on stdcore[0] : distributor( c_inIO, distToWorker, buttonsToDistributor );
+		on stdcore[1] : distributor( c_inIO, distToWorker, buttonsToDistributor );
 
 		on stdcore[0] : visualiser( collToVisualizer, quadrant0, quadrant1, quadrant2, quadrant3 );
 		on stdcore[0]: showLED( cled0, quadrant0 );
@@ -169,7 +169,7 @@ int main() {
 		// Spin-off worker threads
 		// Make sure they run on separate cores
 		par( int i = 0; i < WORKERNO; i++ ) {
-			on stdcore[(i%3)+1] : worker( distToWorker[i], workerToColl[i] );
+			on stdcore[(i%4)] : worker( distToWorker[i], workerToColl[i] );
 		}
 
 		// Start collector worker
