@@ -130,7 +130,7 @@ uchar average_blur(data_packet_t packet, int start, int end, int j) {
 	int sum;
 	sum = 0;
 	if(packet.blacks == packet.count || packet.blacks == j) {
-		result = (uchar)BLACK;
+		result = BLACK;
 	} else {
 		// Sum all pixels
 		for(int i = start; i < end; i++) {
@@ -139,6 +139,7 @@ uchar average_blur(data_packet_t packet, int start, int end, int j) {
 		// Take the average
 		sum /= 9;
 	}
+
 	result = (uchar)sum;
 	return result;
 }

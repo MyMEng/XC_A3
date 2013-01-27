@@ -117,6 +117,7 @@ void DataOutStream(char outfname[], chanend c_in) {
 		   // Read pixels sent into the line
 		   for(int i = 0; i < res.count; ++i) {
 			line[count] = res.pixel[i];
+			count++;
 			// If line buffer is full, write it to the file
 			if(count >= IMWD) {
 				count = 0;
