@@ -20,7 +20,7 @@ typedef unsigned int bool;
 #define IMWD 16
 
 // Maximum number of workers
-#define WORKERNO 4
+#define WORKERNO 9
 
 // Status of application must be greater than 257 not to confuse it with a value of a pixel
 typedef enum {

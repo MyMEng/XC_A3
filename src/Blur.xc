@@ -51,10 +51,10 @@ out port speaker = PORT_SPEAKER;
 // Read Image from pgm file with path and name infname[] to channel c_out
 //
 /////////////////////////////////////////////////////////////////////////////
-void DataInStream(char infname[], chanend c_out) {
+void DataInStream(char infname[], streaming chanend c_out) {
 	int res, signal;
-	uchar line[ IMWD ];
-	printf( "DataInStream:Start...\n" );
+	line_t line;
+	//printf( "DataInStream:Start...\n" );
 	res = _openinpgm( infname, IMWD, IMHT );
 	if( res) {
 		printf( "DataInStream:Error openening %s\n.", infname );
@@ -62,18 +62,16 @@ void DataInStream(char infname[], chanend c_out) {
 	}
 
 	for( int y = 0; y < IMHT; y++ ){
-		_readinline( line, IMWD );
+		_readinline( line.data, IMWD );
 
 		select {
 			case c_out :> signal:
 				if(signal ==  TERMINATE) {
 					_closeinpgm();
-					printf( "DataInStream:Done...\n" );
+					//printf( "DataInStream:Done...\n" );
 					return;
 				} else if (signal == NEXTLINE) {
-					for( int x = 0; x < IMWD; x++ ) {
-						c_out <: line[ x ];
-					}
+					c_out <: line;
 				}
 				break;
 		}
@@ -82,8 +80,7 @@ void DataInStream(char infname[], chanend c_out) {
 	}
 
 	_closeinpgm();
-	printf( "DataInStream:Done...\n" );
-	return;
+	//printf( "DataInStream:Done...\n" );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -92,49 +89,51 @@ void DataInStream(char infname[], chanend c_out) {
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 void DataOutStream(char outfname[], chanend c_in) {
-	int res;
+	int ret;
 	uchar line[ IMWD ];
-	uchar temp;
+	int count;
+	result_t res;
+	bool running;
 
-	printf( "DataOutStream:Start...\n" );
-	res = _openoutpgm( outfname, IMWD, IMHT );
+	running = true;
+	count = 0;
+	//printf( "DataOutStream:Start...\n" );
+	ret = _openoutpgm( outfname, IMWD, IMHT );
 
-	if( res ) {
+	if( ret ) {
 		printf( "DataOutStream:Error opening %s\n.", outfname );
 		return;
 	}
-	for( int y = 0; y < IMHT; y++ ) {
-		for( int x = 0; x < IMWD; x++ ) {
-		   c_in :> temp;
 
-		   if(temp == (uchar)(TERMINATE)) {
-			   printf( "DataOutStream: close output\n" );
-			   _closeoutpgm();
-			   	printf( "DataOutStream: Terminate\n" );
-			   	return;
-		   } else {
-			   line[x] = temp;
-		   }
-		  //printf( "+%4.1d ", line[ x ] );
-		}
-		//printf( "\n" );
-		_writeoutline( line, IMWD );
+	while(running) {
+		c_in :> res;
+
+		if(res.status == TERMINATE) {
+			//printf("Going to send terminate\n");
+		   _closeoutpgm();
+			running = false;
+			continue;
+	   } else {
+		   // Read pixels sent into the line
+		   for(int i = 0; i < res.count; ++i) {
+			line[count] = res.pixel[i];
+			// If line buffer is full, write it to the file
+			if(count >= IMWD) {
+				count = 0;
+				_writeoutline(line, IMWD);
+			}
+         }
+	   }
 	}
-	_closeoutpgm();
-
-	// Wait for terminate to come
-	c_in :> temp;
-	printf( "DataOutStream: close output\n" );
-
-	return;
+	//printf("Going to send terminate\n");
 }
 
 //MAIN PROCESS defining channels, orchestrating and starting the threads
 int main() {
 
-
-	//extend your channel definitions here
-	chan c_inIO, c_outIO;
+	//Channels from data in and to data out
+	streaming chan c_inIO;
+	chan c_outIO;
 
 	// Channels between distributor and workers
 	chan distToWorker[WORKERNO];
@@ -169,7 +168,7 @@ int main() {
 		// Spin-off worker threads
 		// Make sure they run on separate cores
 		par( int i = 0; i < WORKERNO; i++ ) {
-			on stdcore[i%4] : worker( distToWorker[i], workerToColl[i] );
+			on stdcore[(i%3)+1] : worker( distToWorker[i], workerToColl[i] );
 		}
 
 		// Start collector worker

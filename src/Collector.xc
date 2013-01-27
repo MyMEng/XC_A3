@@ -23,54 +23,54 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualiz
 	int signal;
 	const int maxPixels = (IMHT*IMWD); // Maxium number of pixels to be processed
 	bool workersRunning[WORKERNO];
+
 	// Initialize variables
 	running = true;
 	noPixels = 0;
 	signal = 0;
 
 	// Assume all workers are running
-	for(int i = 0; i < WORKERNO; ++i)
+	for(int i = 0; i < WORKERNO; ++i) {
 		workersRunning[i] = true;
+	}
 
 	while(running) {
-		int status;
+		// Listen to each worker
+		for(int w = 0; w < WORKERNO; w++) {
 
-		for(int  w = 0; w < WORKERNO; ++w ) {
-
-			if(!workersRunning[w])
+			// unless it is running, skip
+			if(workersRunning[w] == false)
 				continue;
 
-			select {
-				case c_out :> signal:
-					running = false;
-					//printf("Got finished signal in collector\n");
-					break;
-				case workerToColl[w] :> res:
+			workerToColl[w] :> res;
 
-					if(res.status == TERMINATE) {
-						workersRunning[w] = false;
-					} else {
-						//printf("Worker %d sent me %d pixels\n", w, res.count);
-						for(int i = 0; i < res.count; ++i) {
-							c_out <: res.pixel[i];
-						}
-						noPixels += res.count;
-						toVisualizer <: (int)(noPixels * 100 / maxPixels);
+			if(res.status == TERMINATE) {
+				workersRunning[w] = false;
+			} else {
+				workersRunning[w] = true;
+				//printf("Worker %d sent me %d pixels\n", w, res.count);
+				c_out <: res;
+				noPixels += res.count;
 
-					}
-					break;
+				// Send actual progress to visualizer in percentages
+				toVisualizer <: (int)(noPixels * 100 / maxPixels);
 			}
+		}
 
-			// Check if all workers are alive
-			for(int i = 0; i < WORKERNO; ++i) {
-				running = running & workersRunning[i];
+		// Check if all workers are alive
+		running = false;
+		for(int i = 0; i < WORKERNO; ++i) {
+			if(workersRunning[i] == true) {
+				running = true;
 			}
 		}
 	}
 
-	printf("Collector send terminate to c_out\n");
-	c_out <: (uchar)TERMINATE;
-	toVisualizer <: TERMINATE;
+	// Notify output about termination
+	res.count = 0;
+	res.status = TERMINATE;
+	c_out <: res;
 
-	printf("Collector finished...\n");
+	// and do so with visualizer
+	toVisualizer <: TERMINATE;
 }

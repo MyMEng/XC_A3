@@ -61,12 +61,9 @@ void worker(chanend distToWorker, chanend workerToColl) {
 			}
 
 			if(status == RUNNING) {
-				printf("WOrker got running\n");
 				started = true;
 				continue;
-			}
-
-			if(status == CHANGE_ALGORITHM) {
+			} else if(status == CHANGE_ALGORITHM) {
 				if(filter == AVG) filter = MEDIAN;
 				else if(filter == MEDIAN) filter = AVG;
 				status = old_status;
@@ -74,8 +71,6 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		}
 
 		select {
-			case workerToColl :> status:
-				break;
 			case distToWorker :> packet:
 				status = packet.status;
 				break;
@@ -86,7 +81,9 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		res.status = status;
 
 		if(status == TERMINATE) {
-			printf("Worker got terminate!\n");
+			//printf("Worker sending termiante to collector\n");
+			res.count = 0;
+			res.status = TERMINATE;
 			workerToColl <: res;
 			running = false;
 			continue;
@@ -95,8 +92,6 @@ void worker(chanend distToWorker, chanend workerToColl) {
 		if(status == PAUSE) continue;
 
 		select {
-			case workerToColl :> status:
-				break;
 			case distToWorker :> packet:
 				status = packet.status;
 				break;
@@ -116,56 +111,64 @@ void worker(chanend distToWorker, chanend workerToColl) {
 			start = j * 3;
 			end = 9 + (j * 3);
 
-			if( filter == AVG ) {
-				result = 0;
-
-				if(packet.blacks == packet.count || packet.blacks == j) {
-					res.pixel[j] = BLACK;
-				} else {
-					// Sum all pixels
-					for(int i = start; i < end; i++) {
-						result += (int)packet.pixels[i];
-					}
-					// Take the average
-					result /= 9;
-
-					res.pixel[j] = (uchar)result;
-					//printf("Result: %d\n", result);
-				}
-
-			} else if( filter == MEDIAN ){
-				// Border pixel, don't bother doing anything
-				if(packet.blacks == packet.count || packet.blacks == j) {
-					res.pixel[j] = BLACK;
-				} else {
-					uchar vals[9];
-					for(int i = start, k=0; i < end; ++i, ++k) {
-						vals[k] = packet.pixels[i];
-					}
-					// Put pixels to array
-					for(int i = 0; i < 9; ++i) {
-						int temp = 0;
-						int min = i;
-						for(int y = i; y < 9; y ++) {
-							if(vals[min] > vals[y]) {
-								min = y;
-							}
-						}
-						temp = vals[i];
-						vals[i] = vals[min];
-						vals[min] = temp;
-					}
-
-					result = vals[4];
-
-					res.pixel[j] = (uchar)result;
-				}
+			switch(filter) {
+			case AVG:
+				res.pixel[j] = (uchar)average_blur(packet, start, end, j);
+				break;
+			case MEDIAN:
+				res.pixel[j] = (uchar)median_blur(packet, start, end, j);
+				break;
 			}
 		}
 		// Send result to a collector
 		workerToColl <: res;
 	}
+}
 
+uchar average_blur(data_packet_t packet, int start, int end, int j) {
+	uchar result;
+	int sum;
+	sum = 0;
+	if(packet.blacks == packet.count || packet.blacks == j) {
+		result = (uchar)BLACK;
+	} else {
+		// Sum all pixels
+		for(int i = start; i < end; i++) {
+			sum += (int)packet.pixels[i];
+		}
+		// Take the average
+		sum /= 9;
+	}
+	result = (uchar)sum;
+	return result;
+}
 
+unsigned int median_blur(data_packet_t packet, int start, int end, int j) {
+	unsigned int result;
+	// Border pixel, don't bother doing anything
+	if(packet.blacks == packet.count || packet.blacks == j) {
+		result = BLACK;
+	} else {
+		int vals[9];
+		for(int i = start, k=0; i < end; ++i, ++k) {
+			vals[k] = (unsigned int)packet.pixels[i];
+		}
+		// Put pixels to array
+		for(int i = 0; i < 9; ++i) {
+			int temp = 0;
+			int min = i;
+			for(int y = i; y < 9; y ++) {
+				if(vals[min] > vals[y]) {
+					min = y;
+				}
+			}
+			temp = vals[i];
+			vals[i] = vals[min];
+			vals[min] = temp;
+		}
+
+		result = vals[4];
+	}
+	return result;
 }
 

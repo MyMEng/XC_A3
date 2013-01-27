@@ -26,6 +26,7 @@ int showLED(out port p, chanend fromVisualiser) {
 		}
 		p <: lightUpPattern; //send pattern to LEDs
 	}
+	//printf("showLED terminate\n");
 	return 0;
 }
 
@@ -45,19 +46,23 @@ void visualiser(chanend fromCollector,
 	// Set running to true initially
 	running = true;
 
-	// Turn green on
-	cledG <: true;
-	cledR <: false;
+	// Turn green off
+	cledG <: false;
+	cledR <: true;
 
 	//
 	// LED I = 16
     // I + II = 48
 	// I + II + III = 112
 	// Clear quadrants
-	toQuadrant0 <: 0;
-	toQuadrant1 <: 0;
-	toQuadrant2 <: 0;
-	toQuadrant3 <: 0;
+	toQuadrant0 <: 16;
+	toQuadrant1 <: 16;
+	toQuadrant2 <: 16;
+	toQuadrant3 <: 16;
+
+	// Turn green on
+	cledG <: true;
+	cledR <: false;
 
 
 	while(running) {
@@ -105,9 +110,9 @@ void visualiser(chanend fromCollector,
 		toQuadrant2 <: q2;
 		toQuadrant3 <: q3;
 	}
-	printf("Visualizer dies!\n");
 	toQuadrant0 <: TERMINATE;
 	toQuadrant1 <: TERMINATE;
 	toQuadrant2 <: TERMINATE;
 	toQuadrant3 <: TERMINATE;
+	//printf("Visualizer terminate\n");
 }

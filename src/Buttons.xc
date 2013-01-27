@@ -109,14 +109,11 @@ void buttonListener(in port b, out port spkr, chanend toDistributor) {
 		if( old_status == status ) continue;
 
 		toDistributor <: (int)status;
-
-
-
 		// play sound
 		//if (!muteSound)
 		//	playSound(200000, spkr, 15);
 
 
 	}
-	printf("Buttons shut down\n");
+	//printf("Buttons shut down\n");
 }
