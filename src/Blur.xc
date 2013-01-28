@@ -151,6 +151,9 @@ int main() {
 	// Helper channels for LED visualisation
 	chan quadrant0, quadrant1, quadrant2, quadrant3;
 
+	// Channels from distributor and collector to timer thread
+	chan distToTimer, collToTimer;
+
 	//extend/change this par statement to implement your concurrent filter
 	par {
 		on stdcore[0] : DataInStream( infname, c_inIO );
@@ -158,7 +161,7 @@ int main() {
 		on stdcore[0] : buttonListener(buttons, speaker, buttonsToDistributor);
 
 		// Start distributor thread and connect it with workers
-		on stdcore[1] : distributor( c_inIO, distToWorker, buttonsToDistributor );
+		on stdcore[1] : distributor( c_inIO, distToWorker, buttonsToDistributor, distToTimer);
 
 		on stdcore[0] : visualiser( collToVisualizer, quadrant0, quadrant1, quadrant2, quadrant3 );
 		on stdcore[0]: showLED( cled0, quadrant0 );
@@ -173,7 +176,9 @@ int main() {
 		}
 
 		// Start collector worker
-		on stdcore[3] : collector(workerToColl, c_outIO, collToVisualizer);
+		on stdcore[3] : collector(workerToColl, c_outIO, collToVisualizer, collToTimer);
+
+		on stdcore[2] : timerThread(distToTimer, collToTimer);
 
 		on stdcore[3] : DataOutStream( outfname, c_outIO );
 	}

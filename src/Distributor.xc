@@ -10,7 +10,7 @@
 // parts of the image...
 //
 //////////////////////////////////////////////////////////////////////////////
-void distributor(streaming chanend c_in, chanend distToWorker[WORKERNO], chanend fromButtons) {
+void distributor(streaming chanend c_in, chanend distToWorker[WORKERNO], chanend fromButtons, chanend toTimer) {
 
 	// Temporary variable to store currently read value
 	uchar val;
@@ -84,6 +84,9 @@ void distributor(streaming chanend c_in, chanend distToWorker[WORKERNO], chanend
 			data_packet_t p;
 			p.count = 0;
 			p.status = RUNNING;
+
+			// Measure time
+			toTimer <: 1;
 
 			// Notify about changed algorithms
 			for(int i = 0; i < WORKERNO; i++)

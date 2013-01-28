@@ -31,6 +31,6 @@ typedef struct {
 data_packet_t prepare_packet(line_t buffer[3], int pix, int sentLine);
 
 // Distributor thread
-void distributor(streaming chanend c_in, chanend distToWorker[WORKERNO], chanend fromButtons);
+void distributor(streaming chanend c_in, chanend distToWorker[WORKERNO], chanend fromButtons, chanend toTimer);
 
 #endif // DISTRIBUTOR_H_

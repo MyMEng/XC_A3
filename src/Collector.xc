@@ -15,12 +15,15 @@
 // Collect results from workers and send to data stream
 //
 /////////////////////////////////////////////////////////////////////////////////////////
-void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualizer) {
+void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualizer, chanend toTimer) {
 	// Declare variables
 	bool running;	// Is collector runnning?
 	result_t res;	// Buffer
 	int noPixels;	// Number of pixels read
 	int signal;
+
+	// Timer
+
 	const int maxPixels = (IMHT*IMWD); // Maxium number of pixels to be processed
 	bool workersRunning[WORKERNO];
 
@@ -65,7 +68,8 @@ void collector(chanend workerToColl[WORKERNO], chanend c_out, chanend toVisualiz
 			}
 		}
 	}
-
+	// Send timer a signal that we are finished
+	toTimer <: 1;
 	// Notify output about termination
 	res.count = 0;
 	res.status = TERMINATE;
